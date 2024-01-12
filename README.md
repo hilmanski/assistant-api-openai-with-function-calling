@@ -1,8 +1,10 @@
 # About
-This is a simple code example on how to work with [assistant API by OpenAI](https://platform.openai.com/docs/assistants/overview).
+This is a simple code example on how to work with [assistant API by OpenAI](https://platform.openai.com/docs/assistants/overview) and function calling.
 
 Read this blog post for the full picture:
-[Beginner tutorial on creating Assistant API by OpenAI](https://serpapi.com/blog/assistant-api-openai-beginner-tutorial/)
+- [Beginner tutorial on creating Assistant API by OpenAI](https://serpapi.com/blog/assistant-api-openai-beginner-tutorial/)
+
+- [Connecting Assistant API with external API using function calling]()
 
 ## Set up
 

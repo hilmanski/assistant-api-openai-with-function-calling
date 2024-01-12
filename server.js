@@ -1,7 +1,10 @@
 require("dotenv").config();
 const OpenAI = require('openai');
 const express = require('express');
-const { OPENAI_API_KEY, ASSISTANT_ID } = process.env;
+const { OPENAI_API_KEY, ASSISTANT_ID, SERPAPI_KEY } = process.env;
+
+// + Addition for function calling
+const { getJson } = require("serpapi");
 
 // Setup Express
 const app = express();
@@ -15,6 +18,22 @@ const openai = new OpenAI({
 // Assistant can be created via API or UI
 const assistantId = ASSISTANT_ID;
 let pollingInterval;
+
+// + Addition for function calling
+// Remember you can declare function on assistant API (during creation) 
+//      or directly at GUI
+
+async function getSearchResult(query) {
+    console.log('------- CALLING AN EXTERNAL API ----------')
+    const json = await getJson({
+        engine: "google",
+        api_key: SERPAPI_KEY,
+        q: query,
+        location: "Austin, Texas",
+    });
+
+    return json["organic_results"];
+}
 
 // Set up a Thread
 async function createThread() {
@@ -45,8 +64,6 @@ async function runAssistant(threadId) {
         }
       );
 
-    console.log(response)
-
     return response;
 }
 
@@ -57,7 +74,6 @@ async function checkingStatus(res, threadId, runId) {
     );
 
     const status = runObject.status;
-    console.log(runObject)
     console.log('Current status: ' + status);
     
     if(status == 'completed') {
@@ -71,6 +87,36 @@ async function checkingStatus(res, threadId, runId) {
         });
 
         res.json({ messages });
+    }
+
+    // + Addition for function calling
+    else if(status === 'requires_action') {
+        console.log('requires_action.. looking for a function')
+
+        if(runObject.required_action.type === 'submit_tool_outputs') {
+            console.log('submit tool outputs ... ')
+            const tool_calls = await runObject.required_action.submit_tool_outputs.tool_calls
+            // Can be choose with conditional, if you have multiple function
+            const parsedArgs = JSON.parse(tool_calls[0].function.arguments);
+            console.log('Query to search for: ' + parsedArgs.query)
+
+            const apiResponse = await getSearchResult(parsedArgs.query)
+            
+            const run = await openai.beta.threads.runs.submitToolOutputs(
+                threadId,
+                runId,
+                {
+                  tool_outputs: [
+                    {
+                      tool_call_id: tool_calls[0].id,
+                        output: JSON.stringify(apiResponse)
+                    },
+                  ],
+                }
+            )
+
+            console.log('Run after submit tool outputs: ' + run.status)
+        }
     }
 }
 
