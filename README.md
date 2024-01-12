@@ -4,7 +4,7 @@ This is a simple code example on how to work with [assistant API by OpenAI](http
 Read this blog post for the full picture:
 - [Beginner tutorial on creating Assistant API by OpenAI](https://serpapi.com/blog/assistant-api-openai-beginner-tutorial/)
 
-- [Connecting Assistant API with external API using function calling]()
+- [Connecting Assistant API with external API using function calling](connect-assistant-api-to-the-internet-openai-x-google)
 
 ## Set up
 
